@@ -72,12 +72,13 @@
 
   <div>
     <ul>
-      <li v-for="termin in store.termine" :key="termin.id">
-        {{ termin.titel }} <br>
-        {{ termin.kategorie }} <br>
-        {{ formatDate(termin.datum) }} <br>
-        {{ termin.uhrzeit }} <br>
-        {{ termin.notizen }}<br>
+      <li v-for="appointment in store.appointments" :key="appointment.id"
+        :style="'background-color:' + appointment.color">
+        {{ appointment.title }} <br>
+        {{ appointment.description }} <br>
+        {{ formatDate(appointment.start_time) }} <br>
+        {{ getCurrentTimeFormatted(appointment.start_time) }} <br>
+        {{ appointment.notizen }}<br>
         <q-btn color="negative" icon="delete" label="Delete" @click="store.removeTermin(toRaw(termin.id))"
           v-close-popup />
       </li>
@@ -119,7 +120,7 @@ const termin = reactive({
 
 onMounted(async () => {
   try {
-    await store.getTermine();
+    await store.getAppointments();
   }
   catch (error) {
     console.error('Error fetching data:', error);

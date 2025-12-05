@@ -9,16 +9,16 @@ const supabase = createClient(
 )
 
 export const usedbStore = defineStore('dbStore', () => {
-  const termine = ref([])
+  const appointments = ref([])
 
-  const getTermine = async () => {
-    const { data, error } = await supabase.from('termine').select('*')
+  const getAppointments = async () => {
+    const { data, error } = await supabase.from('appointment').select('*')
 
     if (error) throw error
 
-    termine.value = data ?? []
+    appointments.value = data ?? []
 
-    return termine.value
+    return appointments.value
   }
 
   const handleLogin = async () => {
@@ -32,27 +32,27 @@ export const usedbStore = defineStore('dbStore', () => {
     return user
   }
 
-  const addTermin = async (termin) => {
+  const addAppointment = async (appointment) => {
     const { data, error } = await supabase
-      .from('termine')
-      .insert([termin], { returning: 'minimal' })
+      .from('appointment')
+      .insert([appointment], { returning: 'minimal' })
 
     if (error) throw error
 
-    getTermine()
+    getAppointments()
 
     return data
   }
 
-  const removeTermin = async (id) => {
-    const { data, error } = await supabase.from('termine').delete().eq('id', id)
+  const removeAppointment = async (id) => {
+    const { data, error } = await supabase.from('appointment').delete().eq('id', id)
 
     if (error) throw error
 
-    getTermine()
+    getAppointments()
 
     return data
   }
 
-  return { termine, getTermine, handleLogin, addTermin, removeTermin }
+  return { appointments, getAppointments, handleLogin, addAppointment, removeAppointment }
 })
