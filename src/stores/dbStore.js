@@ -44,8 +44,11 @@ export const usedbStore = defineStore('dbStore', () => {
     return data
   }
 
-  const removeAppointment = async (id) => {
-    const { data, error } = await supabase.from('appointment').delete().eq('id', id)
+  const removeAppointment = async (appointment) => {
+    const { data, error } = await supabase
+      .from('appointment')
+      .delete()
+      .eq('event_id', appointment.event_id)
 
     if (error) throw error
 
