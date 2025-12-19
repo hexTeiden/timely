@@ -4,13 +4,10 @@
     <div class="col-12 row items-center">
       <span class="text-h5">Timely</span>
       <q-space />
-      <nav v-if="!user.loggedin">
-        <q-btn color="primary" label="Log in" @click="store.handleLogin()" />
-      </nav>
-      <nav v-else>
+      <nav>
         <q-btn-dropdown color="primary" label="Konto">
           <q-list>
-            <q-item clickable @click="handleLogout">
+            <q-item clickable @click="store.handleLogout()">
               <q-item-section>Log out</q-item-section>
             </q-item>
           </q-list>
@@ -136,6 +133,43 @@
     </q-card>
   </q-dialog>
 
+  <q-dialog v-model="loginDialog">
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-btn color="positive" class="full-width" icon="check" label="Login with Google"
+          @click="store.handleGoogleLogin" />
+      </q-card-section>
+
+      <div class="row items-center q-mb-md divider">
+        <div class="col">
+          <q-separator />
+        </div>
+        <div class="col-auto text-caption q-px-md" :class="$q.dark.isActive ? 'text-grey-5' : 'text-grey-6'">
+          ODER
+        </div>
+        <div class="col">
+          <q-separator />
+        </div>
+      </div>
+
+      <q-card-section class="row items-center">
+        <div class="q-gutter-md">
+          <q-input v-model="email" type="text" label="Email" />
+          <q-input v-model="password" :type="showPassword ? 'text' : 'password'" label="Password">
+            <template v-slot:append>
+              <q-icon :name="showPassword ? 'visibility_off' : 'visibility'" class="cursor-pointer"
+                @click="showPassword = !showPassword" />
+            </template>
+          </q-input>
+        </div>
+      </q-card-section>
+      <q-card-section class=" items-center">
+        <q-btn :disabled="password === '' || email === ''" label="Log in" class="full-width" color="primary"
+          v-close-popup />
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+
 
 </template>
 
@@ -148,8 +182,11 @@ const store = usedbStore()
 const $q = useQuasar()
 
 const addTermin = ref(false)
+const loginDialog = ref(false)
+const showPassword = ref(false)
 const addError = ref('')
-const user = ref({ loggedin: false })
+const email = ref('')
+const password = ref('')
 const date = ref(new Date())
 const miniDate = ref(new Date().toISOString().split('T')[0])
 const currentMonth = ref(new Date())
@@ -267,14 +304,10 @@ async function submitTermin() {
   }
 }
 
-function handleLogout() {
-  user.value.loggedin = false
-  // Add logout logic to store if needed
-}
-
 onMounted(async () => {
   try {
     await store.getAppointments()
+    console.log(store.user)
   } catch (error) {
     console.error('Error fetching appointments:', error)
   }
