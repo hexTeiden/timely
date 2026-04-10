@@ -151,55 +151,69 @@ export const usedbStore = defineStore('dbStore', () => {
   }
 
   const getAppointments = async () => {
+    console.log('[GET] getAppointments called')
     if (!appUser.value) await ensureAppUser()
     if (!calendars.value.length) await getCalendars()
     const ids = calendars.value.map(c => c.calender_id)
-    if (!ids.length) { appointments.value = []; return [] }
+    console.log('[GET] calendar ids:', ids)
+    if (!ids.length) { console.log('[GET] no calendars, clearing appointments'); appointments.value = []; return [] }
     const { data, error } = await supabase
       .from('appointment')
       .select('*')
       .in('calendar_id', ids)
-    if (error) throw error
+    if (error) { console.error('[GET] error:', error); throw error }
+    console.log('[GET] fetched', data?.length, 'appointments:', data)
     appointments.value = data ?? []
     return appointments.value
   }
 
   const addAppointment = async (appointment) => {
+    console.log('[ADD] addAppointment called with:', appointment)
     const { data, error } = await supabase
       .from('appointment')
       .insert([appointment])
       .select()
       .single()
-    if (error) throw error
+    if (error) { console.error('[ADD] error:', error); throw error }
+    console.log('[ADD] inserted, server returned:', data)
     if (data) appointments.value = [...appointments.value, data]
+    console.log('[ADD] local state now has', appointments.value.length, 'appointments')
   }
 
   const updateAppointment = async (id, fields) => {
+    console.log('[UPDATE] updateAppointment called, id:', id, 'fields:', fields)
     const { data, error } = await supabase
       .from('appointment')
       .update(fields)
       .eq('event_id', id)
       .select()
       .single()
-    if (error) throw error
+    if (error) { console.error('[UPDATE] error:', error); throw error }
+    console.log('[UPDATE] server returned:', data)
     if (data) {
       appointments.value = appointments.value.map(a =>
         a.event_id === id ? data : a
       )
     }
+    console.log('[UPDATE] local state now has', appointments.value.length, 'appointments')
   }
 
   const removeAppointment = async (appointment) => {
+    console.log('[DELETE] removeAppointment called with:', appointment)
+    console.log('[DELETE] using event_id:', appointment.event_id)
     const prev = appointments.value
     appointments.value = prev.filter(a => a.event_id !== appointment.event_id)
+    console.log('[DELETE] optimistic update: state went from', prev.length, 'to', appointments.value.length)
     const { error } = await supabase
       .from('appointment')
       .delete()
       .eq('event_id', appointment.event_id)
     if (error) {
+      console.error('[DELETE] error, rolling back:', error)
       appointments.value = prev
       throw error
     }
+    console.log('[DELETE] server delete successful, local state has', appointments.value.length, 'appointments')
   }
 
   return {

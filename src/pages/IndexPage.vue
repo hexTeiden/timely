@@ -574,14 +574,17 @@ function editEvent(apt) {
 }
 
 async function deleteFromDialog() {
-  if (!editingId.value) return
+  console.log('[UI deleteFromDialog] editingId:', editingId.value)
+  if (!editingId.value) { console.log('[UI deleteFromDialog] no editingId, skipping'); return }
   try {
     await store.removeAppointment({ event_id: editingId.value })
+    console.log('[UI deleteFromDialog] success')
     $q.notify({ type: 'positive', message: 'Termin gelöscht' })
     addTermin.value = false
     resetTermin()
   } catch (e) {
-    $q.notify({ type: 'negative', message: e.message })
+    console.error('[UI deleteFromDialog] error:', e)
+    $q.notify({ type: 'negative', message: e.message || String(e) })
   }
 }
 
@@ -801,11 +804,15 @@ function formatTime(ts) {
   return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
 }
 async function deleteEvent(apt) {
+  console.log('[UI deleteEvent] apt:', apt)
+  console.log('[UI deleteEvent] event_id:', apt.event_id, '_origId:', apt._origId)
   try {
-    await store.removeAppointment(apt)
+    await store.removeAppointment({ event_id: apt._origId || apt.event_id })
+    console.log('[UI deleteEvent] success')
     $q.notify({ type: 'positive', message: 'Termin gelöscht' })
   } catch (e) {
-    $q.notify({ type: 'negative', message: e.message })
+    console.error('[UI deleteEvent] error:', e)
+    $q.notify({ type: 'negative', message: e.message || String(e) })
   }
 }
 function getWeekNumber(date) {
@@ -821,11 +828,15 @@ function checkInputs() {
   addError.value = ''; return true
 }
 async function submitTermin() {
-  if (!checkInputs()) return
+  console.log('[UI submitTermin] called, editingId:', editingId.value)
+  console.log('[UI submitTermin] termin state:', JSON.parse(JSON.stringify(termin)))
+  if (!checkInputs()) { console.log('[UI submitTermin] checkInputs failed'); return }
   try {
     if (!termin.calendar_id) {
+      console.log('[UI submitTermin] no calendar_id, fetching default')
       const cal = await store.ensureDefaultCalendar()
       termin.calendar_id = cal.calender_id
+      console.log('[UI submitTermin] got calendar_id:', termin.calendar_id)
     }
     const payload = {
       title: termin.title,
@@ -836,29 +847,39 @@ async function submitTermin() {
       calendar_id: termin.calendar_id,
       is_recurring: !!termin.is_recurring,
     }
+    console.log('[UI submitTermin] payload:', payload)
     if (editingId.value) {
+      console.log('[UI submitTermin] updating appointment id:', editingId.value)
       await store.updateAppointment(editingId.value, payload)
     } else {
+      console.log('[UI submitTermin] creating new appointment')
       await store.addAppointment(payload)
     }
+    console.log('[UI submitTermin] success')
     $q.notify({ type: 'positive', message: editingId.value ? 'Gespeichert ✨' : 'Termin hinzugefügt ✨' })
     addTermin.value = false
     resetTermin()
   } catch (e) {
+    console.error('[UI submitTermin] error:', e)
     $q.notify({ type: 'negative', message: e.message || String(e) })
   }
 }
 
 onMounted(async () => {
+  console.log('[MOUNT] IndexPage mounted')
   themeStore.applyToDocument()
   try {
     await store.initAuth()
+    console.log('[MOUNT] auth done')
     await store.ensureAppUser()
+    console.log('[MOUNT] appUser:', store.appUser)
     const cal = await store.ensureDefaultCalendar()
+    console.log('[MOUNT] default calendar:', cal)
     if (cal) termin.calendar_id = cal.calender_id
     await store.getAppointments()
+    console.log('[MOUNT] appointments loaded:', store.appointments.length)
   } catch (err) {
-    console.error(err)
+    console.error('[MOUNT] error:', err)
     $q.notify({ type: 'negative', message: 'Kalender-Setup fehlgeschlagen: ' + err.message })
   }
 })

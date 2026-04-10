@@ -60,7 +60,7 @@ html[data-bgimage='1'] {
 html[data-bgimage='1'] body,
 html[data-bgimage='1'] #q-app { background: transparent !important; }
 html[data-bgimage='1'] body::before { opacity: 0; }
-html[data-bgimage='1'] body::after { opacity: 0.25; }
+html[data-bgimage='1'] body::after { opacity: 0; }
 
 body::after {
   content: '';
