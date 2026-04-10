@@ -232,6 +232,7 @@ function loadInitial() {
   return {
     presetKey: 'light', overrides: {},
     animatedBg: true, glass: true, radius: 16, font: 'Inter',
+    bgImage: '',
     layoutMode: 'glass', density: 'cozy', weekStart: 'mo', showWeekNumbers: true,
     iconStyle: 'auto',
   }
@@ -250,6 +251,7 @@ export const useThemeStore = defineStore('themeStore', () => {
   const weekStart = ref(initial.weekStart ?? 'mo')
   const showWeekNumbers = ref(initial.showWeekNumbers ?? true)
   const iconStyle = ref(initial.iconStyle ?? 'auto')
+  const bgImage = ref(initial.bgImage ?? '')
 
   const theme = computed(() => ({
     ...THEME_PRESETS[presetKey.value],
@@ -282,6 +284,17 @@ export const useThemeStore = defineStore('themeStore', () => {
       ? (t.dark ? 'outlined' : 'filled')
       : iconStyle.value
     r.dataset.icons = resolvedIcon
+    if (bgImage.value) {
+      r.style.setProperty('--t-bg-image', `url("${bgImage.value}")`)
+      r.dataset.bgimage = '1'
+    } else {
+      r.style.removeProperty('--t-bg-image')
+      r.dataset.bgimage = '0'
+    }
+  }
+
+  function setBgImage(dataUrl) {
+    bgImage.value = dataUrl || ''
   }
 
   function setPreset(key) {
@@ -305,7 +318,7 @@ export const useThemeStore = defineStore('themeStore', () => {
   }
 
   watch(
-    [presetKey, overrides, animatedBg, glass, radius, font, layoutMode, density, weekStart, showWeekNumbers, iconStyle],
+    [presetKey, overrides, animatedBg, glass, radius, font, layoutMode, density, weekStart, showWeekNumbers, iconStyle, bgImage],
     () => {
       applyToDocument()
       try {
@@ -323,6 +336,7 @@ export const useThemeStore = defineStore('themeStore', () => {
             weekStart: weekStart.value,
             showWeekNumbers: showWeekNumbers.value,
             iconStyle: iconStyle.value,
+            bgImage: bgImage.value,
           }),
         )
       } catch { /* noop */ }
@@ -342,9 +356,11 @@ export const useThemeStore = defineStore('themeStore', () => {
     weekStart,
     showWeekNumbers,
     iconStyle,
+    bgImage,
     theme,
     setPreset,
     setOverride,
+    setBgImage,
     reset,
     applyToDocument,
   }

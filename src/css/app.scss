@@ -49,6 +49,19 @@ html[data-animated='0'] body::before {
   animation: none;
 }
 
+// Custom user background image
+html[data-bgimage='1'] {
+  background-image: var(--t-bg-image);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+html[data-bgimage='1'] body,
+html[data-bgimage='1'] #q-app { background: transparent !important; }
+html[data-bgimage='1'] body::before { opacity: 0; }
+html[data-bgimage='1'] body::after { opacity: 0.25; }
+
 body::after {
   content: '';
   position: fixed;

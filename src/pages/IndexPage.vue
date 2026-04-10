@@ -272,6 +272,26 @@
         <q-toggle v-model="themeStore.glass" label="Glassmorphism" />
 
         <div class="q-mt-md">
+          <div class="text-caption q-mb-xs" style="opacity:0.7;">Background image</div>
+          <div class="row items-center" style="gap:10px;">
+            <div v-if="themeStore.bgImage"
+              :style="{
+                width: '56px', height: '40px', borderRadius: '8px',
+                border: '1px solid var(--t-border)',
+                backgroundImage: `url(${themeStore.bgImage})`,
+                backgroundSize: 'cover', backgroundPosition: 'center'
+              }"></div>
+            <q-btn no-caps unelevated rounded icon="image" label="Upload"
+              :style="{ background: 'var(--t-surface)', color: 'var(--t-text)' }"
+              @click="$refs.bgFile.click()" />
+            <q-btn v-if="themeStore.bgImage" no-caps flat rounded icon="close" label="Clear"
+              @click="themeStore.setBgImage('')" />
+            <input ref="bgFile" type="file" accept="image/*" style="display:none"
+              @change="onBgImageChange" />
+          </div>
+        </div>
+
+        <div class="q-mt-md">
           <div class="text-caption q-mb-xs" style="opacity:0.7;">Icon style</div>
           <div class="row items-center" style="gap:10px;">
             <q-btn-toggle v-model="themeStore.iconStyle" no-caps unelevated rounded
@@ -453,6 +473,19 @@ import { onMounted, reactive, ref, computed } from 'vue'
 
 const store = usedbStore()
 const themeStore = useThemeStore()
+
+function onBgImageChange(e) {
+  const file = e.target.files && e.target.files[0]
+  e.target.value = ''
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Image too large (max 5 MB).')
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = () => themeStore.setBgImage(reader.result)
+  reader.readAsDataURL(file)
+}
 const $q = useQuasar()
 
 const presets = THEME_PRESETS
